@@ -86,6 +86,7 @@ Shader *cubemapShader;
 Shader *particlesShader;
 Shader* keplerShader;
 Shader* fresnelShader;
+Shader *mLightsShader;
 
 // Modelos del sistema solar
 Model* sol;
@@ -235,6 +236,9 @@ bool Start() {
 	pyxis			= new Model("models/Proyecto/Constelaciones/pyxis.fbx");
 	virgo			= new Model("models/Proyecto/Constelaciones/virgo.fbx");
 
+	//Vector de luces
+	std::vector<Light> gLights;
+	
 	// Skybox
 	skybox = new Model("models/Proyecto/skybox.fbx");
 
@@ -324,6 +328,35 @@ bool Update() {
 	light04.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
 	light04.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	gLights.push_back(light04);
+
+	void SetLightUniformInt(Shader* shader, const char* propertyName, size_t lightIndex, int value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setInt(uniformName.c_str(), value);
+}
+	void SetLightUniformFloat(Shader* shader, const char* propertyName, size_t lightIndex, float value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setFloat(uniformName.c_str(), value);
+	}
+	void SetLightUniformVec4(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec4 value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setVec4(uniformName.c_str(), value);
+	}
+	void SetLightUniformVec3(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec3 value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setVec3(uniformName.c_str(), value);
+	}
 	*/
 	// Dibujado del museo
 	{
@@ -363,7 +396,19 @@ bool Update() {
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 		staticShader->setMat4("model", model);
-		
+		/*
+		// Configuramos propiedades de fuentes de luz
+		mLightsShader->use();
+		mLightsShader->setInt("numLights", (int)gLights.size());
+		for (size_t i = 0; i < gLights.size(); ++i) {
+			SetLightUniformVec3(mLightsShader, "Position", i, gLights[i].Position);
+			SetLightUniformVec3(mLightsShader, "Direction", i, gLights[i].Direction);
+			SetLightUniformVec4(mLightsShader, "Color", i, gLights[i].Color);
+			SetLightUniformVec4(mLightsShader, "Power", i, gLights[i].Power);
+			SetLightUniformInt(mLightsShader, "alphaIndex", i, gLights[i].alphaIndex);
+			SetLightUniformFloat(mLightsShader, "distance", i, gLights[i].distance);
+		}*/
+		//Puertas
 		//museoPuerta01->Draw(*staticShader);
 		//museoPuerta02->Draw(*staticShader);
 		//museoPuertaInt->Draw(*staticShader);
@@ -546,6 +591,12 @@ void processInput(GLFWwindow* window)
 		constelacion = 11;
 	if (glfwGetKey(window, GLFW_KEY_F12) == GLFW_PRESS)
 		constelacion = 12;
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		//Abrir puertas del museo
+		{
+		
+	}
+	
 
 	// Desactiva las constelaciones cuando se sale del domo
 	if (position.x > 6.0f)
