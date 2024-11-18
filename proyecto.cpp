@@ -130,6 +130,13 @@ Model* skybox;
 // Audio
 ISoundEngine *SoundEngine = createIrrKlangDevice();
 
+// Materiales
+Material material;
+
+//Vector de luces
+std::vector<Light> gLights;
+Model* luz;
+
 // Arreglos para el dibujado de los planetas
 Model* planetas[] = { mercurio,	venus,	tierra,	 marte,  jupiter, saturno,	urano,   neptuno };
 float ejesMayores[] = { 10.0f,	15.0f,	20.f,	 25.0f,  35.0f,	  45.0f,	55.0f,   75.0f };
@@ -196,9 +203,10 @@ bool Start() {
 	/*
 	cubemapShader = new Shader("shaders/10_vertex_cubemap.vs", "shaders/10_fragment_cubemap.fs");
 	particlesShader	= new Shader("shaders/13_particles.vs", "shaders/13_particles.fs");*/
-	staticShader	= new Shader("shaders/10_vertex_simple.vs"	,"shaders/10_fragment_simple.fs");
-	keplerShader	= new Shader("shaders/kepler.vs"			,"shaders/kepler.fs");
-	fresnelShader	= new Shader("shaders/11_Fresnel.vs"		,"shaders/11_Fresnel.fs");
+	mLightsShader   = new Shader("shaders/11_PhongShaderMultLights.vs", "shaders/11_PhongShaderMultLights.fs");
+	staticShader	= new Shader("shaders/10_vertex_simple.vs",			"shaders/10_fragment_simple.fs");
+	keplerShader	= new Shader("shaders/kepler.vs",					"shaders/kepler.fs");
+	fresnelShader	= new Shader("shaders/11_Fresnel.vs",				"shaders/11_Fresnel.fs");
 
 	// Modelos del sistema solar
 	sol		=	new Model("models/Proyecto/Planetas/sol.fbx");
@@ -236,9 +244,6 @@ bool Start() {
 	pyxis			= new Model("models/Proyecto/Constelaciones/pyxis.fbx");
 	virgo			= new Model("models/Proyecto/Constelaciones/virgo.fbx");
 
-	//Vector de luces
-	std::vector<Light> gLights;
-	
 	// Skybox
 	skybox = new Model("models/Proyecto/skybox.fbx");
 
@@ -249,7 +254,69 @@ bool Start() {
 
 	SoundEngine->play2D("audios/bienvenida 1.mp3", true);
 
+	// Configuración de luces
+
+	luz = new Model("models/IllumModels/lightDummy.fbx");
+
+	Light light01;
+	light01.Position = glm::vec3(-12.0f, 11.0f, 12.0f);
+	light01.Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	light01.Power = glm::vec4(5.0f, 5.0f, 5.0f, 1.0f);
+	gLights.push_back(light01);
+
+	Light light02;
+	light02.Position = glm::vec3(-12.0f, 11.0f, -12.0f);
+	light02.Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	light02.Power = glm::vec4(5.0f, 5.0f, 5.0f, 1.0f);
+	gLights.push_back(light02);
+
+	Light light03;
+	light03.Position = glm::vec3(12.0f, 11.0f, -12.0f);
+	light03.Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	light03.Power = glm::vec4(5.0f, 5.0f, 5.0f, 1.0f);
+	gLights.push_back(light03);
+
+	Light light04;
+	light04.Position = glm::vec3(12.0f, 11.0f, 12.0f);
+	light04.Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	light04.Power = glm::vec4(5.0f, 5.0f, 5.0f, 1.0f);
+	gLights.push_back(light04);
+
+	material.ambient = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material.transparency = 1.0f;
+
 	return true;
+}
+
+void SetLightUniformInt(Shader* shader, const char* propertyName, size_t lightIndex, int value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setInt(uniformName.c_str(), value);
+}
+void SetLightUniformFloat(Shader* shader, const char* propertyName, size_t lightIndex, float value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setFloat(uniformName.c_str(), value);
+}
+void SetLightUniformVec4(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec4 value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setVec4(uniformName.c_str(), value);
+}
+void SetLightUniformVec3(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec3 value) {
+	std::ostringstream ss;
+	ss << "allLights[" << lightIndex << "]." << propertyName;
+	std::string uniformName = ss.str();
+
+	shader->setVec3(uniformName.c_str(), value);
 }
 
 bool Update() {
@@ -305,59 +372,61 @@ bool Update() {
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 1000.0f));	// it's a bit too big for our scene, so scale it down
 		staticShader->setMat4("model", model);
 		skybox->Draw(*staticShader);
-		glUseProgram(0);
 	}
-	// Configuración de luces
-	/*
-	light01.Position = glm::vec3(12.0f, 10.0f, 12.0f);
-	light01.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
-	light01.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	gLights.push_back(light01);
+	
+	glUseProgram(0);
+	
+	// Configuramos propiedades de fuentes de luz
+	{
+		mLightsShader->use();
 
-	light02.Position = glm::vec3(12.0f, 10.0f, -12.0f);
-	light02.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
-	light02.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	gLights.push_back(light02);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	light03.Position = glm::vec3(-12.0f, 10.0f, -12.0f);
-	light03.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
-	light03.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	gLights.push_back(light03);
+		mLightsShader->setMat4("projection", projection);
+		mLightsShader->setMat4("view", view);
 
-	light04.Position = glm::vec3(-12.0f, 10.0f, 12.0f);
-	light04.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
-	light04.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	gLights.push_back(light04);
+		// Aplicamos transformaciones del modelo
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		mLightsShader->setMat4("model", model);
 
-	void SetLightUniformInt(Shader* shader, const char* propertyName, size_t lightIndex, int value) {
-	std::ostringstream ss;
-	ss << "allLights[" << lightIndex << "]." << propertyName;
-	std::string uniformName = ss.str();
+		mLightsShader->setInt("numLights", (int)gLights.size());
 
-	shader->setInt(uniformName.c_str(), value);
-}
-	void SetLightUniformFloat(Shader* shader, const char* propertyName, size_t lightIndex, float value) {
-	std::ostringstream ss;
-	ss << "allLights[" << lightIndex << "]." << propertyName;
-	std::string uniformName = ss.str();
+		for (size_t i = 0; i < gLights.size(); ++i)
+		{
+			SetLightUniformVec3(mLightsShader, "Position", i, gLights[i].Position);
+			SetLightUniformVec3(mLightsShader, "Direction", i, gLights[i].Direction);
+			SetLightUniformVec4(mLightsShader, "Color", i, gLights[i].Color);
+			SetLightUniformVec4(mLightsShader, "Power", i, gLights[i].Power);
+			SetLightUniformInt(mLightsShader, "alphaIndex", i, gLights[i].alphaIndex);
+			SetLightUniformFloat(mLightsShader, "distance", i, gLights[i].distance);
+		}
 
-	shader->setFloat(uniformName.c_str(), value);
+		mLightsShader->setVec3("eye", camera.Position);
+
+		mLightsShader->setVec4("MaterialAmbientColor", material.ambient);
+		mLightsShader->setVec4("MaterialDiffuseColor", material.diffuse);
+		mLightsShader->setVec4("MaterialSpecularColor", material.specular);
+		mLightsShader->setFloat("transparency", material.transparency);
+
+		museoEstructura->Draw(*mLightsShader);
+
+		
+		/*   --    Light Dummy para realizar pruebas de luz
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(12.0f, 10.0f, 12.0f)); 
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	
+		mLightsShader->setMat4("model", model);
+
+		luz->Draw(*mLightsShader); */
 	}
-	void SetLightUniformVec4(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec4 value) {
-	std::ostringstream ss;
-	ss << "allLights[" << lightIndex << "]." << propertyName;
-	std::string uniformName = ss.str();
 
-	shader->setVec4(uniformName.c_str(), value);
-	}
-	void SetLightUniformVec3(Shader* shader, const char* propertyName, size_t lightIndex, glm::vec3 value) {
-	std::ostringstream ss;
-	ss << "allLights[" << lightIndex << "]." << propertyName;
-	std::string uniformName = ss.str();
+	glUseProgram(0);
 
-	shader->setVec3(uniformName.c_str(), value);
-	}
-	*/
 	// Dibujado del museo
 	{
 		fresnelShader->use();
@@ -396,27 +465,16 @@ bool Update() {
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 		staticShader->setMat4("model", model);
-		/*
-		// Configuramos propiedades de fuentes de luz
-		mLightsShader->use();
-		mLightsShader->setInt("numLights", (int)gLights.size());
-		for (size_t i = 0; i < gLights.size(); ++i) {
-			SetLightUniformVec3(mLightsShader, "Position", i, gLights[i].Position);
-			SetLightUniformVec3(mLightsShader, "Direction", i, gLights[i].Direction);
-			SetLightUniformVec4(mLightsShader, "Color", i, gLights[i].Color);
-			SetLightUniformVec4(mLightsShader, "Power", i, gLights[i].Power);
-			SetLightUniformInt(mLightsShader, "alphaIndex", i, gLights[i].alphaIndex);
-			SetLightUniformFloat(mLightsShader, "distance", i, gLights[i].distance);
-		}*/
+		
 		//Puertas
 		//museoPuerta01->Draw(*staticShader);
 		//museoPuerta02->Draw(*staticShader);
 		//museoPuertaInt->Draw(*staticShader);
-		museoEstructura->Draw(*staticShader);
 		museoVitrina->Draw(*staticShader);
 		consola->Draw(*staticShader);
-		glUseProgram(0);
 	}
+
+	glUseProgram(0);
 
 	// Dibujado de las constelaciones
 	{
@@ -479,9 +537,9 @@ bool Update() {
 				dibujarSistemaSolar(projection, view);
 				break;
 		}
-		
-		glUseProgram(0);
 	}
+
+	glUseProgram(0);
 
 	// glfw: swap buffers 
 	glfwSwapBuffers(window);
