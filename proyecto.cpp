@@ -52,6 +52,9 @@ const unsigned int SCR_HEIGHT = 768;
 Camera camera(glm::vec3(0.0f, 8.0f, 10.0f));
 Camera camera3rd(glm::vec3(0.0f, 0.0f, 0.0f));
 
+// Definicion de fuentes de Luz
+Light light01, light02, light03, light04;
+
 // Controladores para el movimiento del mouse
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -300,7 +303,28 @@ bool Update() {
 		skybox->Draw(*staticShader);
 		glUseProgram(0);
 	}
+	// Configuración de luces
+	/*
+	light01.Position = glm::vec3(12.0f, 10.0f, 12.0f);
+	light01.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	light01.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	gLights.push_back(light01);
 
+	light02.Position = glm::vec3(12.0f, 10.0f, -12.0f);
+	light02.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	light02.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	gLights.push_back(light02);
+
+	light03.Position = glm::vec3(-12.0f, 10.0f, -12.0f);
+	light03.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	light03.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	gLights.push_back(light03);
+
+	light04.Position = glm::vec3(-12.0f, 10.0f, 12.0f);
+	light04.Color = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	light04.Power = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	gLights.push_back(light04);
+	*/
 	// Dibujado del museo
 	{
 		fresnelShader->use();
