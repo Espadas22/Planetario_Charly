@@ -247,7 +247,7 @@ bool Start() {
 	camera3rd.Position	-= forwardView;
 	camera3rd.Front		=  forwardView;
 
-	//SoundEngine->play2D("sound/EternalGarden.mp3", true);
+	SoundEngine->play2D("audios/bienvenida 1.mp3", true);
 
 	return true;
 }
@@ -559,48 +559,99 @@ void processInput(GLFWwindow* window)
 		camera3rd.Position.y += 1.7f;
 		camera3rd.Position -= forwardView;
 	}
-	
+
 	// Cambios de la camara
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		activeCamera = 0;
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 		activeCamera = 1;
-	
+
 	// Cambio de la constelacion seleccionada
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+	{
 		constelacion = 1;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/acuario.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
+	{
 		constelacion = 2;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/aries.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+	{
 		constelacion = 3;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/cancer.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS)
+	{
 		constelacion = 4;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/coronaBorealis.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS)
+	{
 		constelacion = 5;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/corvus.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS)
+	{
 		constelacion = 6;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/cygnus.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F7) == GLFW_PRESS)
+	{
 		constelacion = 7;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/gemini.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F8) == GLFW_PRESS)
+	{
 		constelacion = 8;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/leo.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F9) == GLFW_PRESS)
+	{
 		constelacion = 9;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/libra.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F10) == GLFW_PRESS)
+	{
 		constelacion = 10;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/phoenix.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
+	{
 		constelacion = 11;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/pyxis.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_F12) == GLFW_PRESS)
+	{
 		constelacion = 12;
+		SoundEngine->stopAllSounds();
+		SoundEngine->play2D("audios/virgo.mp3", true);
+	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		//Abrir puertas del museo
-		{
-		
+	{
+
 	}
-	
+
 
 	// Desactiva las constelaciones cuando se sale del domo
 	if (position.x > 6.0f)
+	{
+		SoundEngine->stopAllSounds();
 		constelacion = 0;
+	}
 }
 
 // glfw: Actualizamos el puerto de vista si hay cambios del tamaño
